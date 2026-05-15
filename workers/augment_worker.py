@@ -27,3 +27,4 @@ class AugmentWorker(QThread):
             stop_flag=self.stop_flag,
         )
         self.finished.emit()
+ 
