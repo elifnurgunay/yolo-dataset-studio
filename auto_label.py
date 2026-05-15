@@ -220,7 +220,7 @@ def main():
         if (idx + 1) % 10 == 0 or idx == len(images) - 1:
             print(f"  [{idx + 1}/{len(images)}] {img_path.name} — "
                   f"{len(detections)} tespit, {elapsed_ms:.1f}ms")
-
+ 
     if inf_times:
         avg = sum(inf_times) / len(inf_times)
         stats['avg_ms'] = round(avg, 2)
