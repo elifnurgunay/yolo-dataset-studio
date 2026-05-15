@@ -2,6 +2,7 @@
 
  
 A PyQt5 desktop application that provides video frame extraction, automatic labeling, and data augmentation operations within a single interface.
+It has 3 steps to create your spesific dataset.
 
 ---
 <img width="1919" height="374" alt="image" src="https://github.com/user-attachments/assets/5ac047c5-9331-4d5b-91b7-dda118f5ff4e" />
@@ -32,8 +33,6 @@ Automatically labels images using a trained YOLO model.
 Artificially expands the dataset using the `albumentations` framework.  
 All augmentation settings can be managed through the interface.
 
-
-
 | Category | Processes |
 |---|---|
 | Geometric | HorizontalFlip, Affine |
@@ -45,13 +44,107 @@ All augmentation settings can be managed through the interface.
 
 Each transformation can be enabled or disabled individually or by group, and all parameters can be configured through the UI.
 
+## 2.GUI Reference
+
+Tab 1 — Frame Extract
+Extract optimal image frames from raw video sources using customizable sampling algorithms.
+
+| Interface Element | Operational Description |
+| :--- | :--- |
+| **Video path** | Accepts standard container formats supported by OpenCV (`.mp4`, `.avi`, `.mkv`, `.mov`). |
+| **Output folder** | Designated local target directory for written `.jpg` image sequence frames. |
+| **Mode Selection** | Choose between `every_nth` (interval), `fps` (temporal target), or `motion` (dynamic change). |
+| **Nth frame** | Specifies frame gap distance when mode is set to `every_nth`. |
+| **Target FPS** | Downsamples video playback temporal speed to absolute frames per second. |
+| **Motion threshold**| Absolute pixel delta differential limit filter for capturing scene activity. |
+
+Tab 2 — Auto Label
+Automate object bounding box annotation workflows across vast unlabelled directories using raw inference power.
+
+| Interface Element | Operational Description |
+| :--- | :--- |
+| **Image Folder** | Directory path holding source frames/images awaiting machine detection. |
+| **Model Path** | Local file system trajectory to selected YOLO weights file (`.pt`). |
+| **Output Root Folder** | Base location where partitioned structural sub-folders are constructed automatically. |
+| **Conf Threshold** | Detection filter threshold value rejecting untrusted background classifications. |
+| **IOU Threshold** | Non-Maximum Suppression overlap threshold preventing duplicate overlapping predictions. |
+| **Image Size** | Square pixel target dimension fed directly into network processing layers. |
+| **Device Toggle** | Direct computational device target override (`cuda` vs `cpu`). |
+| **Output Flags** | Checkbox toggles enabling concurrent output stream writes (TXT, JSON, Annotated). |
+| **Skip Empty** | Skip writing outputs for images with zero valid detections. |
+
+Tab 3 — Augmentation
+Multiply dataset scale and network robustness through tailored synthetic transformations.
+
+| Interface Element | Operational Description |
+| :--- | :--- |
+| **Image Folder** | Source directory containing ground-truth unaugmented base images. |
+| **Label Folder (.txt)** | Folder housing matched standard YOLO label files. |
+| **Output Folder** | Destination root path outputting parallel expanded `images/` and `labels/` structures. |
+| **Multiplier** | Integer defining output count factor generation per singular input item. |
+
+## API Documentation
+
+Integrate studio backends programmatically into external scripting routines.
+
+### `core.extractor`
+
+```python
+from core.extractor import get_video_info, get_preview_frames, run_extraction
+```
+```get_video_info(video_path: str | Path) -> dict | None```
+
+Parses physical video container parameters directly via low-level stream reading. Resolves Windows absolute Unicode strings securely. Returns metadata dictionary containing total_frames, fps, width, height, and duration.
+
+```get_preview_frames(video_path: str | Path, n: int = 6) -> list[np.ndarray]```
+
+Extracts random, non-contiguous raw memory representations (BGR numpy multidimensional matrices) across video boundaries for UI rendering pipelines.
+
+```run_extraction(cfg: dict, log_cb: Callable, progress_cb: Callable, stop_flag: threading.Event) -> int```
+
+Executes configured sequential frame captures driven by requested algorithmic sampling modes. Safe thread execution allows unconstrained cross-thread interrupts. Returns final output written frame quantity.
+
+### `core.labeler`
+
+```python
+from core.labeler import run_pipeline
+```
+
+```run_pipeline(cfg: dict, log_cb: Callable, progress_cb: Callable, stop_flag: threading.Event) -> dict | None```
+
+Instantiates local torch memory architectures, ingests configuration maps, sweeps directories sequentially executing NMS threshold filtering, and handles parallel storage pipelines. Returns finalized dictionary summary structures.
+
+### `core.augmentor`
+
+```python
+from core.augmentor import run_augmentation
+```
+```run_augmentation(cfg: dict, log_cb: Callable, progress_cb: Callable, stop_flag: threading.Event) -> None```
+
+Deploys dynamically created complex composition pipelines utilizing Albumentations. Reads companion coordinate map annotations and executes precise bounding-box spatial recalculations across multiple multiplied output variants simultaneously.
+
+### `workers`
+
+All underlying processing modules utilize robust threading constructs extending `QThread` combined with standard `pyqtSignal` events for thread-safe cross-boundary communication.
+
+Background Execution Controllers:
+
+`LabelWorker(cfg):` Wraps `core.labeler.run_pipeline` execution. Dispatches log, progress, and finished signals asynchronously.
+
+`ExtractWorker(cfg):` Offloads `core.extractor.run_extraction` video decoding loops. Prevents interactive UI frame-drops.
+
+`PreviewWorker(video_path):` Concurrently retrieves video sample arrays populating preview layout placeholders dynamically.
+
+`AugmentWorker(cfg):` Handles high-throughput synthetic operations across expansive disk files concurrently.
+
 ---
 
-## 2. USAGE
+## 3. USAGE
 
 ### Requirements
 - Python 3.10+
 - CUDA 12.x + NVIDIA driver (for GPU acceleration)
+- Operating System: Windows, Linux, or macOS
 
 ### Steps
 
@@ -78,7 +171,7 @@ python app.py
 
 ---
 
-## 3.PROJECT STRUCTURE
+## 4.PROJECT STRUCTURE
 
 ```
 iyhss_data_prepare/
@@ -109,7 +202,7 @@ iyhss_data_prepare/
 
 ---
 
-## 4.CONFIGURATION
+## 5.CONFIGURATION
 
 Edit `config.yaml` to configure the model path and output directories:
 
@@ -132,7 +225,7 @@ output:
 
 ---
 
-## 5.CLI Usage (Without GUI)
+## 6.CLI Usage (Without GUI)
 
 ```bash
 # After editing config.yaml
@@ -141,7 +234,7 @@ python auto_label.py
 
 ---
 
-## 6.Building the .exe 
+## 7.Building the .exe 
 
 ```bash
 pip install pyinstaller
@@ -159,7 +252,7 @@ Output: `dist/IYHSS_DataPrepare/IYHSS_DataPrepare.exe`
 
 ---
 
-## 7.Dependencies
+## 8.Dependencies
 
 | Package | Purpose |
 |---|---|
@@ -173,6 +266,6 @@ Output: `dist/IYHSS_DataPrepare/IYHSS_DataPrepare.exe`
 
 ---
 
-## 8.License
+## 9.License
 
 MIT
