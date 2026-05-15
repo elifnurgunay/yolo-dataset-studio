@@ -21,3 +21,4 @@ Write-Host "Gorsellerinizi asagidaki klasore koyun:" -ForegroundColor Yellow
 Write-Host "  C:\Users\Atakan\datasets\to_label\images\" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Hazir oldugunda calistirin: python auto_label.py" -ForegroundColor Green
+ 
